@@ -1,0 +1,14 @@
+.main-container{
+    .gameboard{
+        .gamefield{
+            max-width: 450px;
+            margin-top: 50px;
+            .subfield{
+                cursor: pointer;
+                height: 150px;
+                width: 150px;
+                border: 6.67px solid #E5E5E5;
+            }
+        }
+    }
+}

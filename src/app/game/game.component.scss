@@ -25,6 +25,12 @@
                 height: 150px;
                 width: 150px;
                 border: 6.67px solid #E5E5E5;
+                &.player-one{
+                    background: rgb(83,163,83);
+                }
+                &.player-two{
+                    background: rgb(230,109,109);
+                }
             }
         }
     }

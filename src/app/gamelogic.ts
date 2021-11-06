@@ -7,27 +7,6 @@ export class Gamelogic {
 
     gameStatus!: Status;
 
-    winSituationsOne: Array<Array<number>> = [
-        [1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 1, 1, 1],
-        [1, 0, 0, 1, 0, 0, 1, 0, 0],
-        [0, 1, 0, 0, 1, 0, 0, 1, 0],
-        [0, 0, 1, 0, 0, 1, 0, 0, 1],
-        [1, 0, 0, 0, 1, 0, 0, 0, 1],
-        [0, 0, 1, 0, 1, 0, 1, 0, 0]
-    ];
-
-    winSituationsTwo: Array<Array<number>> = [
-        [2, 2, 2, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 2, 2, 2, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 2, 2, 2],
-        [2, 0, 0, 2, 0, 0, 2, 0, 0],
-        [0, 2, 0, 0, 2, 0, 0, 2, 0],
-        [0, 0, 2, 0, 0, 2, 0, 0, 2],
-        [2, 0, 0, 0, 2, 0, 0, 0, 2],
-        [0, 0, 2, 0, 2, 0, 2, 0, 0]
-    ];
 
     public constructor(){
         this.gameStatus= Status.STOP;
@@ -82,10 +61,9 @@ export class Gamelogic {
 
     async checkGameEndWinner(): Promise<boolean>{
         let isWinner = false;
-
-        const checkArray = (this.currentTurn === 1) ? this.winSituationsOne : this.winSituationsTwo;
-
-         const currentArray = [] as any;
+        
+        // Par Array
+        const currentArray = [] as any;
 
         this.gamefield.forEach((subfield, index)=>{
             if(subfield !== this.currentTurn){
@@ -96,12 +74,97 @@ export class Gamelogic {
             }
         });
 
-        checkArray.forEach((checkfield, checkindex)=>{
-            if(this.arrayEquals(checkfield, currentArray)){
-                isWinner = true;
-            }
+        // Par row ou line
+        const checkRow = [] as any;
+        //1
+        /*1 1 1
+          0 0 0
+          0 0 0 * */
 
-        });
+        for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[i];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //2
+        /**0 0 0
+         * 1 1 1
+         * 0 0 0
+        */
+        for(let i=3; i<6; i++){
+            checkRow[i-3] = currentArray[i];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //3
+        /**0 0 0
+         * 0 0 0
+         * 1 1 1
+         */
+        for(let i=6; i<9; i++){
+            checkRow[i-6] = currentArray[i];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+
+        //4
+        /**1 0 0
+         * 1 0 0
+         * 1 0 0
+         */
+        for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[i*3];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //5
+        /**0 1 0
+         * 0 1 0
+         * 0 1 0
+         */
+        for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[1+i*3];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //6
+        /**0 0 1
+         * 0 0 1
+         * 0 0 1
+         */
+        for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[2+i*3];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //7
+        /**1 0 0
+         * 0 1 0
+         * 0 0 1
+         */
+        for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[i*4];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
+        //8
+        /**0 0 1
+         * 0 1 0
+         * 1 0 0
+         */
+         for(let i=0; i<3; i++){
+            checkRow[i] = currentArray[2+i*2];
+        }
+        if(this.arrayEquals(checkRow, [this.currentTurn, this.currentTurn, this.currentTurn])){
+            isWinner = true;
+        }
 
         if( isWinner ){
             this.gameEnd()

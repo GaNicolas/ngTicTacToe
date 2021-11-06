@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { of } from 'rxjs';
 import { Gamelogic } from '../gamelogic';
 
 @Component({
@@ -12,6 +13,7 @@ export class GameComponent implements OnInit {
   constructor(public game: Gamelogic) { }
 
   positionHold : Array<number> = [];
+  win: boolean=false;
 
   ngOnInit(): void {
   }
@@ -29,37 +31,51 @@ export class GameComponent implements OnInit {
       const information = document.querySelector('.current-status');
 
       if(position != this.positionHold[0]){
-      this.game.setField(position, this.game.currentTurn);
-      const color = this.game.getPlayerColorClass();
-      subfield.currentTarget.classList.add(color);
-      
-      await this.game.checkGameEndWinner().then((end: boolean) =>{
-        if(this.game.gameStatus === 0 && end){
-          information!.innerHTML = 'The Winner is Player ' + this.game.currentTurn;
+        this.game.setField(position, this.game.currentTurn);
+        const color = this.game.getPlayerColorClass();
+        subfield.currentTarget.classList.add(color);
+        await this.game.checkGameEndWinner().then((end: boolean) => {
+          this.win = end;
+            if(this.game.gameStatus === 0 && end) {
+              information!.innerHTML = 'The winner is player number ' + this.game.currentTurn;
+            }
+          });
+          if(!this.win){
+        await this.game.checkGameEndFull().then((end: boolean) => {
+            if(this.game.gameStatus === 0 && end) {
+              information!.innerHTML = 'No winner, draw'
+            }
+          });
         }
-      });;
 
-      await this.game.checkGameEndFull().then((end: boolean) =>{
-        if(this.game.gameStatus === 0 && end){
-          information!.innerHTML = 'No Winner, Draw';
+          this.game.changePlayer();
+
+        if(this.game.gameStatus === 1){
+
+          const currentPlayer = 'Current turn: Player: ' + this.game.currentTurn;
+
+          information!.innerHTML = currentPlayer;
+
         }
-      });;
 
-
-
-      this.game.changePlayer();
-
-      if(this.game.gameStatus === 1){
-        const currentPlayer = 'Current turn: Player: ' + this.game.currentTurn;
-        information!.innerHTML = currentPlayer;
       }
-      try {
+
+
+
+      try{
+
         this.positionHold.pop();
+
         this.positionHold = [position];
-      } catch (error) {
-        //Prout pas bon
+
       }
+
+      catch (e){
+
+        // Do nothing
+
       }
+
     }
   }
 

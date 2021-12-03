@@ -1,21 +1,32 @@
 import {Status} from './gamestatus';
+import io from 'socket.io-client';
 export class Gamelogic {
     
-    gamefield: Array<number> = [];
+    public gamefield: Array<number> = [];
 
     currentTurn: number=0;
 
     gameStatus!: Status;
 
+    private socket: any;
+
+    dataSocket= {
+        position: 0,
+        value: 0
+    };
+
 
     public constructor(){
         this.gameStatus= Status.STOP;
         this.gamefield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
+        //this.socket = io("http://localhost:3000");
+        /*this.socket.on("position", (data: any) =>{
+            console.log(data);
+            this.socketSetField(data.position, data.value);
+        });*/
     }
 
     gameStart(): void{
-        this.gamefield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.currentTurn = this.randomPlayerStart();
         this.gameStatus = Status.START;
     }
@@ -26,6 +37,17 @@ export class Gamelogic {
     }
 
     setField(position: number, value: number): void{
+        if(this.dataSocket.position != position && this.dataSocket.value != value){
+        this.gamefield[position] = value;
+    
+        this.dataSocket.position = position;
+        this.dataSocket.value = value;
+        //this.socket.emit("move", this.dataSocket);
+        }
+    }
+
+    socketSetField(position: number, value: number): void{
+        
         this.gamefield[position] = value;
     }
 

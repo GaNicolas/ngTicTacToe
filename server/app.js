@@ -23,12 +23,13 @@ Socketio.on("connection", socket =>{
         console.log(Socketio.sockets.adapter.rooms.get(roomCode).size);
        if(Socketio.sockets.adapter.rooms.get(roomCode).size <= 2){
         players[Socketio.sockets.adapter.rooms.get(roomCode).size -1 ] = socket.id;
-        console.log(players);
+
         id = roomCode;
         if(Socketio.sockets.adapter.rooms.get(roomCode).size == 2){
             const rndInt = randomIntFromInterval(0,1);
-            console.log("rnd : "+rndInt);
             Socketio.to(players[rndInt]).emit("isTurn", true);
+            Socketio.to(players[(rndInt+1) %2]).emit("isTurn", false);
+            Socketio.to(roomCode).emit("onStart", true);
         }
        }
     })
@@ -37,7 +38,6 @@ Socketio.on("connection", socket =>{
         subfield = data;
         socket.broadcast.to(roomCode).emit("position", subfield);
     });
-
     socket.on("disconnet",() =>{
         console.log("User disconnected");
     });

@@ -42,7 +42,6 @@ export class Gamelogic {
     
         this.dataSocket.position = position;
         this.dataSocket.value = value;
-        //this.socket.emit("move", this.dataSocket);
         }
     }
 
@@ -199,6 +198,7 @@ export class Gamelogic {
     }
 
     gameEnd(): void{
+        this.gamefield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.gameStatus = Status.STOP;
     }
 }

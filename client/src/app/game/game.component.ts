@@ -22,6 +22,8 @@ export class GameComponent implements OnInit {
   id: number=-1;
   isTurn: boolean = false;
   stateGame: string = 'Waiting for an opponent';
+  playerOne: any;
+  playerTwo: any;
 
   ngOnInit(): void {
   }
@@ -31,18 +33,44 @@ export class GameComponent implements OnInit {
     this.game.gameStart();
     const currentPlayer = this.stateGame;
     const information = document.querySelector('.current-status');
+
     information!.innerHTML = currentPlayer;
     this.socket = io("http://localhost:3000");
     this.socket.emit("joinRoom", idRoom);
     this.socket.on("position", (data: any)=>{
       this.clickSubfieldSocket(data);
     });
+    this.socket.on("onStart", (Vrai:any) =>{
+      this.setTurnHTML();
+    });
+
     this.socket.on("isTurn",(_turn: any) => {
+      if(_turn == true){
       this.isTurn = true;
       this.turn();
-      const currentPlayer = this.stateGame
+      const currentPlayer = this.stateGame;
       information!.innerHTML = currentPlayer;
+
+      }else{
+        this.turn();
+        this.isTurn = false;
+        const currentPlayer = this.stateGame;
+        information!.innerHTML = currentPlayer;
+      }
     });
+  }
+
+  async setTurnHTML(){
+    if(this.isTurn == true){
+    document.querySelector('.playerOne')!.innerHTML = 'You';
+    document.querySelector('.playerTwo')!.innerHTML = 'Opponent';
+  }
+
+    else if(this.isTurn == false){
+      document.querySelector('.playerOne')!.innerHTML = 'Opponent';
+      document.querySelector('.playerTwo')!.innerHTML = 'You';
+    }
+
   }
 
   turn(): void{
@@ -69,10 +97,12 @@ export class GameComponent implements OnInit {
         this.game.setField(position, this.game.currentTurn);
         const color = this.game.getPlayerColorClass();
         elements!.classList.add(color);
+        console.log(this.game.gamefield);
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
-              information!.innerHTML = 'The winner is player number ' + this.game.currentTurn;
+              if(this.isTurn == true)
+              information!.innerHTML = 'You lost';
             }
           });
           if(!this.win){
@@ -131,7 +161,8 @@ export class GameComponent implements OnInit {
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
-              information!.innerHTML = 'The winner is player number ' + this.game.currentTurn;
+              if(this.isTurn == false)
+              information!.innerHTML = 'You won ! ';
             }
           });
           if(!this.win){

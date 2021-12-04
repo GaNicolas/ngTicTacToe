@@ -1,6 +1,9 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { Gamelogic } from '../gamelogic';
+
 import io from 'socket.io-client';
+import { FormsModule, NgForm } from '@angular/forms';
+
 
 @Component({
   selector: 'app-game',
@@ -16,28 +19,52 @@ export class GameComponent implements OnInit {
   win: boolean=false;
   subfieldSocket:any;
   socket: any;
+  id: number=-1;
+  isTurn: boolean = false;
+  stateGame: string = 'Waiting for an opponent';
 
   ngOnInit(): void {
   }
 
-  startGame(idRoom : number): void{
-    console.log(idRoom);
+  startGame (idRoom: number): void{
+    this.id = idRoom;
     this.game.gameStart();
-    const currentPlayer = 'Current turn: Player' + this.game.currentTurn;
+    const currentPlayer = this.stateGame;
     const information = document.querySelector('.current-status');
     information!.innerHTML = currentPlayer;
     this.socket = io("http://localhost:3000");
-    this.socket.on("position", (data: any) =>{
+    this.socket.emit("joinRoom", idRoom);
+    this.socket.on("position", (data: any)=>{
       this.clickSubfieldSocket(data);
     });
+    this.socket.on("isTurn",(_turn: any) => {
+      this.isTurn = true;
+      this.turn();
+      const currentPlayer = this.stateGame
+      information!.innerHTML = currentPlayer;
+    });
+  }
+
+  turn(): void{
+    if(this.isTurn == true)
+      this.stateGame = 'Your turn !';
+    else
+     this.stateGame = "Opponent's turn";
+
+  }
+
+  onSubmit(idRoom: NgForm): void{
+    if(idRoom.value.idRoom >= 0)
+    this.startGame(idRoom.value.idRoom);
   }
 
   async clickSubfieldSocket(subfield: any):Promise<void>{
     if(this.game.gameStatus == 1){
+      this.isTurn = true;
+      this.turn();
       const position = subfield.position;
       const information = document.querySelector('.current-status');
       const elements = document.querySelector('.position'+position);
-      console.log(elements);
       if(position != this.positionHold[0]){
         this.game.setField(position, this.game.currentTurn);
         const color = this.game.getPlayerColorClass();
@@ -60,7 +87,7 @@ export class GameComponent implements OnInit {
 
         if(this.game.gameStatus === 1){
 
-          const currentPlayer = 'Current turn: Player: ' + this.game.currentTurn;
+          const currentPlayer = this.stateGame
 
           information!.innerHTML = currentPlayer;
 
@@ -87,16 +114,17 @@ export class GameComponent implements OnInit {
   }
 
   async clickSubfield(subfield: any):Promise<void>{
-    if(this.game.gameStatus == 1){
+    if(this.game.gameStatus == 1 && this.isTurn){
       const position = subfield.currentTarget.getAttribute('position');
       const information = document.querySelector('.current-status');
       if(position != this.positionHold[0]){
         this.subfieldSocket={
           'position': subfield.currentTarget.getAttribute('position'),
-          'currentTarget': subfield.currentTarget
+          'currentTarget': subfield.currentTarget,
         }
-        this.socket.emit("move", this.subfieldSocket);
-        
+        this.socket.emit("move", this.subfieldSocket,this.id);
+        this.isTurn = false;
+        this.turn();
         this.game.setField(position, this.game.currentTurn);
         const color = this.game.getPlayerColorClass();
         subfield.currentTarget.classList.add(color);
@@ -118,7 +146,7 @@ export class GameComponent implements OnInit {
 
         if(this.game.gameStatus === 1){
 
-          const currentPlayer = 'Current turn: Player: ' + this.game.currentTurn;
+          const currentPlayer = this.stateGame;
 
           information!.innerHTML = currentPlayer;
 

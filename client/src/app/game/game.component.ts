@@ -31,6 +31,7 @@ export class GameComponent implements OnInit {
   startGame (idRoom: number): void{
     this.id = idRoom;
     this.game.gameStart();
+    console.log(this.game.gamefield);
     const currentPlayer = this.stateGame;
     const information = document.querySelector('.current-status');
 
@@ -103,12 +104,15 @@ export class GameComponent implements OnInit {
             if(this.game.gameStatus === 0 && end) {
               if(this.isTurn == true)
               information!.innerHTML = 'You lost';
+              this.socket.emit("leaveRoom", this.id);
             }
           });
           if(!this.win){
         await this.game.checkGameEndFull().then((end: boolean) => {
             if(this.game.gameStatus === 0 && end) {
               information!.innerHTML = 'No winner, draw'
+              this.socket.emit("leaveRoom", this.id);
+
             }
           });
         }
@@ -123,21 +127,12 @@ export class GameComponent implements OnInit {
 
         }
       }
-
-
-
       try{
-
         this.positionHold.pop();
-
         this.positionHold = [position];
-
       }
-
       catch (e){
-
         // Do nothing
-
       }
 
     }
@@ -147,7 +142,11 @@ export class GameComponent implements OnInit {
     if(this.game.gameStatus == 1 && this.isTurn){
       const position = subfield.currentTarget.getAttribute('position');
       const information = document.querySelector('.current-status');
+      console.log(position);
+      console.log(this.game.gamefield[position]==0);
+      if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
+        console.log("ça passe");
         this.subfieldSocket={
           'position': subfield.currentTarget.getAttribute('position'),
           'currentTarget': subfield.currentTarget,
@@ -163,44 +162,32 @@ export class GameComponent implements OnInit {
             if(this.game.gameStatus === 0 && end) {
               if(this.isTurn == false)
               information!.innerHTML = 'You won ! ';
+              this.socket.emit("leaveRoom", this.id);
             }
           });
           if(!this.win){
         await this.game.checkGameEndFull().then((end: boolean) => {
             if(this.game.gameStatus === 0 && end) {
               information!.innerHTML = 'No winner, draw'
+              this.socket.emit("leaveRoom", this.id);
             }
           });
         }
-
           this.game.changePlayer();
-
         if(this.game.gameStatus === 1){
-
           const currentPlayer = this.stateGame;
-
           information!.innerHTML = currentPlayer;
-
         }
       }
-
-
-
       try{
-
         this.positionHold.pop();
-
         this.positionHold = [position];
-
       }
-
       catch (e){
-
         // Do nothing
-
       }
 
     }
   }
-
+  }
 }

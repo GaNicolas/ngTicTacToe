@@ -27,7 +27,7 @@ export class Gamelogic {
     }
 
     gameStart(): void{
-        this.currentTurn = this.randomPlayerStart();
+        this.currentTurn = 1;
         this.gameStatus = Status.START;
     }
 

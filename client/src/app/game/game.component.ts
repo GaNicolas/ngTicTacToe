@@ -31,8 +31,7 @@ export class GameComponent implements OnInit {
   startGame (idRoom: number): void{
     this.id = idRoom;
     this.game.gameStart();
-    console.log(this.game.gamefield);
-    const currentPlayer = this.stateGame;
+    const currentPlayer =  'Waiting for an opponent';
     const information = document.querySelector('.current-status');
 
     information!.innerHTML = currentPlayer;
@@ -51,7 +50,6 @@ export class GameComponent implements OnInit {
       this.turn();
       const currentPlayer = this.stateGame;
       information!.innerHTML = currentPlayer;
-
       }else{
         this.turn();
         this.isTurn = false;
@@ -75,16 +73,19 @@ export class GameComponent implements OnInit {
   }
 
   turn(): void{
+    console.log("turn");
     if(this.isTurn == true)
       this.stateGame = 'Your turn !';
     else
      this.stateGame = "Opponent's turn";
-
   }
 
   onSubmit(idRoom: NgForm): void{
-    if(idRoom.value.idRoom >= 0)
+    if(idRoom.value.idRoom >= 0){
     this.startGame(idRoom.value.idRoom);
+    this.isTurn = false;
+    this.stateGame = 'Waiting for an opponent';
+  }
   }
 
   async clickSubfieldSocket(subfield: any):Promise<void>{
@@ -96,23 +97,23 @@ export class GameComponent implements OnInit {
       const elements = document.querySelector('.position'+position);
       if(position != this.positionHold[0]){
         this.game.setField(position, this.game.currentTurn);
+        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         elements!.classList.add(color);
-        console.log(this.game.gamefield);
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
-              if(this.isTurn == true)
+              if(this.isTurn == true){
               information!.innerHTML = 'You lost';
               this.socket.emit("leaveRoom", this.id);
+            }
             }
           });
           if(!this.win){
         await this.game.checkGameEndFull().then((end: boolean) => {
             if(this.game.gameStatus === 0 && end) {
-              information!.innerHTML = 'No winner, draw'
+              information!.innerHTML = 'No winner, draw';
               this.socket.emit("leaveRoom", this.id);
-
             }
           });
         }
@@ -120,9 +121,7 @@ export class GameComponent implements OnInit {
           this.game.changePlayer();
 
         if(this.game.gameStatus === 1){
-
           const currentPlayer = this.stateGame
-
           information!.innerHTML = currentPlayer;
 
         }
@@ -142,11 +141,9 @@ export class GameComponent implements OnInit {
     if(this.game.gameStatus == 1 && this.isTurn){
       const position = subfield.currentTarget.getAttribute('position');
       const information = document.querySelector('.current-status');
-      console.log(position);
-      console.log(this.game.gamefield[position]==0);
       if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
-        console.log("ça passe");
+        
         this.subfieldSocket={
           'position': subfield.currentTarget.getAttribute('position'),
           'currentTarget': subfield.currentTarget,
@@ -155,14 +152,16 @@ export class GameComponent implements OnInit {
         this.isTurn = false;
         this.turn();
         this.game.setField(position, this.game.currentTurn);
+        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         subfield.currentTarget.classList.add(color);
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
-              if(this.isTurn == false)
+              if(this.isTurn == false){
               information!.innerHTML = 'You won ! ';
               this.socket.emit("leaveRoom", this.id);
+            }
             }
           });
           if(!this.win){
@@ -170,6 +169,7 @@ export class GameComponent implements OnInit {
             if(this.game.gameStatus === 0 && end) {
               information!.innerHTML = 'No winner, draw'
               this.socket.emit("leaveRoom", this.id);
+
             }
           });
         }

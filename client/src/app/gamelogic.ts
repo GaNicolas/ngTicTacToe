@@ -8,12 +8,6 @@ export class Gamelogic {
 
     gameStatus!: Status;
 
-    private socket: any;
-
-    dataSocket= {
-        position: 0,
-        value: 0
-    };
 
 
     public constructor(){
@@ -37,16 +31,10 @@ export class Gamelogic {
     }
 
     setField(position: number, value: number): void{
-        if(this.dataSocket.position != position && this.dataSocket.value != value){
         this.gamefield[position] = value;
-    
-        this.dataSocket.position = position;
-        this.dataSocket.value = value;
-        }
     }
 
     socketSetField(position: number, value: number): void{
-        
         this.gamefield[position] = value;
     }
 

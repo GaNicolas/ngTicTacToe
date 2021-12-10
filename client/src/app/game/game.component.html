@@ -11,7 +11,12 @@
     </div>
 
     <div *ngIf="this.game.gameStatus === 1"class="gameboard">
-    <div>Id Room : {{id}}</div>
+    <div>
+        <div (click)="leave()"><button mat-raised-button color="accent"><span class="material-icons">
+            arrow_back
+            </span>Retour</button></div>
+        <div>Id Room : {{id}}</div>
+    </div>
 
     <div class="players player-one align-self-center">
         <p class="playerOne mat-body-1 playerOne" style="font-weight: 700; margin: 0 0 10px 10px">Player 1</p>

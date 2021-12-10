@@ -13,11 +13,6 @@ export class Gamelogic {
     public constructor(){
         this.gameStatus= Status.STOP;
         this.gamefield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-        //this.socket = io("http://localhost:3000");
-        /*this.socket.on("position", (data: any) =>{
-            console.log(data);
-            this.socketSetField(data.position, data.value);
-        });*/
     }
 
     gameStart(): void{

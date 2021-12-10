@@ -21,40 +21,44 @@ export class GameComponent implements OnInit {
   socket: any;
   id: number=-1;
   isTurn: boolean = false;
-  stateGame: string = 'Waiting for an opponent';
+  stateGame: string = 'Waiting for an opponent...';
   playerOne: any;
   playerTwo: any;
+  currentPlayer : any;
+  information: any;
 
   ngOnInit(): void {
+    this.socket = io("http://localhost:3000");
   }
 
   startGame (idRoom: number): void{
     this.id = idRoom;
     this.game.gameStart();
-    const currentPlayer =  'Waiting for an opponent';
-    const information = document.querySelector('.current-status');
+    this.setTitle("Waiting for an opponent...");
 
-    information!.innerHTML = currentPlayer;
-    this.socket = io("http://localhost:3000");
     this.socket.emit("joinRoom", idRoom);
     this.socket.on("position", (data: any)=>{
       this.clickSubfieldSocket(data);
     });
+
     this.socket.on("onStart", (Vrai:any) =>{
       this.setTurnHTML();
+    });
+
+    this.socket.on("leave", (id:any)=>{
+      if(id == this.id){
+        this.setTitle("Opponent left... Waiting for an opponent...");
+        this.isTurn = false;
+      }
     });
 
     this.socket.on("isTurn",(_turn: any) => {
       if(_turn == true){
       this.isTurn = true;
       this.turn();
-      const currentPlayer = this.stateGame;
-      information!.innerHTML = currentPlayer;
       }else{
-        this.turn();
         this.isTurn = false;
-        const currentPlayer = this.stateGame;
-        information!.innerHTML = currentPlayer;
+        this.turn();
       }
     });
   }
@@ -69,23 +73,43 @@ export class GameComponent implements OnInit {
       document.querySelector('.playerOne')!.innerHTML = 'Opponent';
       document.querySelector('.playerTwo')!.innerHTML = 'You';
     }
-
   }
 
   turn(): void{
-    console.log("turn");
     if(this.isTurn == true)
-      this.stateGame = 'Your turn !';
+        this.setTitle("Your turn !");
     else
-     this.stateGame = "Opponent's turn";
+        this.setTitle("Opponent's turn !");
   }
 
-  onSubmit(idRoom: NgForm): void{
-    if(idRoom.value.idRoom >= 0){
-    this.startGame(idRoom.value.idRoom);
-    this.isTurn = false;
-    this.stateGame = 'Waiting for an opponent';
+  async checkJoinRoom(bool:boolean): Promise<boolean>{
+    return bool;
   }
+
+  async onSubmit(idRoom: NgForm):Promise<void>{
+    if(idRoom.value.idRoom >= 1){
+    this.socket.emit("isFull",true);
+    this.socket.on("isFull", (bool:any)=>{
+      if(!bool){
+        this.startGame(idRoom.value.idRoom);
+        this.isTurn = false;
+    }else
+        this.setTitle('This room is full !');
+    });
+  }
+};
+
+  setTitle(msg : string ): void{
+    this.currentPlayer =  msg;
+    this.information = document.querySelector('.current-status');
+    this.information!.innerHTML = this.currentPlayer;
+  }
+
+  leave() : void{
+    this.socket.emit("leave",(this.id));
+    this.game.gameStatus = 0;
+    this.id = -1;
+    this.setTitle('Start the game by clicking the button below');
   }
 
   async clickSubfieldSocket(subfield: any):Promise<void>{
@@ -93,27 +117,27 @@ export class GameComponent implements OnInit {
       this.isTurn = true;
       this.turn();
       const position = subfield.position;
-      const information = document.querySelector('.current-status');
       const elements = document.querySelector('.position'+position);
       if(position != this.positionHold[0]){
         this.game.setField(position, this.game.currentTurn);
-        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         elements!.classList.add(color);
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
               if(this.isTurn == true){
-              information!.innerHTML = 'You lost';
+              this.setTitle('You lost');
               this.socket.emit("leaveRoom", this.id);
+              this.id = -1;
             }
             }
           });
           if(!this.win){
         await this.game.checkGameEndFull().then((end: boolean) => {
             if(this.game.gameStatus === 0 && end) {
-              information!.innerHTML = 'No winner, draw';
+              this.setTitle('No winner, draw');
               this.socket.emit("leaveRoom", this.id);
+              this.id = -1;
             }
           });
         }
@@ -121,9 +145,6 @@ export class GameComponent implements OnInit {
           this.game.changePlayer();
 
         if(this.game.gameStatus === 1){
-          const currentPlayer = this.stateGame
-          information!.innerHTML = currentPlayer;
-
         }
       }
       try{
@@ -140,7 +161,6 @@ export class GameComponent implements OnInit {
   async clickSubfield(subfield: any):Promise<void>{
     if(this.game.gameStatus == 1 && this.isTurn){
       const position = subfield.currentTarget.getAttribute('position');
-      const information = document.querySelector('.current-status');
       if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
         
@@ -152,31 +172,30 @@ export class GameComponent implements OnInit {
         this.isTurn = false;
         this.turn();
         this.game.setField(position, this.game.currentTurn);
-        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         subfield.currentTarget.classList.add(color);
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
               if(this.isTurn == false){
-              information!.innerHTML = 'You won ! ';
+              this.setTitle('You won ! ');
               this.socket.emit("leaveRoom", this.id);
+              this.id = -1;
             }
             }
           });
           if(!this.win){
         await this.game.checkGameEndFull().then((end: boolean) => {
             if(this.game.gameStatus === 0 && end) {
-              information!.innerHTML = 'No winner, draw'
+              this.setTitle('No winner, draw');
               this.socket.emit("leaveRoom", this.id);
+              this.id = -1;
 
             }
           });
         }
           this.game.changePlayer();
         if(this.game.gameStatus === 1){
-          const currentPlayer = this.stateGame;
-          information!.innerHTML = currentPlayer;
         }
       }
       try{

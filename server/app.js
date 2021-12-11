@@ -20,10 +20,9 @@ var id=0;
 let players = [];
 
 function delPlayer(socketId){
-    for(let i = 0 ; i < 2; i++){
-        if(players[i] == socketId){
-            players.splice(i,1);
-        }
+    const index = players.indexOf(socketId);
+    if( index > -1){
+        players.splice(index,1);
     }
 }
 
@@ -40,8 +39,12 @@ Socketio.on("connection", socket =>{
     socket.on("joinRoom", (roomCode) =>{
         if(players.length < 2){
         socket.join(roomCode);
+        players.push(socket.id);
+        console.log(players);
+        console.log(roomCode);
+        console.log(Socketio.sockets.adapter.rooms.get(roomCode).size);
         if(Socketio.sockets.adapter.rooms.get(roomCode).size <= 2){
-        players[Socketio.sockets.adapter.rooms.get(roomCode).size -1 ] = socket.id;
+            //players[Socketio.sockets.adapter.rooms.get(roomCode).size -1 ] = socket.id;
         const rndInt = randomIntFromInterval(0,1);
         id = roomCode;
         if(Socketio.sockets.adapter.rooms.get(roomCode).size == 2){
@@ -55,22 +58,29 @@ Socketio.on("connection", socket =>{
 
     socket.on("disconnect",() =>{
         delPlayer(socket.id);
+        Socketio.to(id).emit("hasLeft",id);
+        subfield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     })
 
     socket.on("leaveRoom", (roomCode) =>{
+        console.log("leaveRoom");
         socket.leave(roomCode);
         players = [];
+    
     })
 
     socket.on("leave", (roomCode) =>{
         socket.leave(roomCode);
         delPlayer(socket.id);
-        Socketio.to(roomCode).emit("leave",roomCode);
+        Socketio.to(roomCode).emit("hasLeft",roomCode);
+        subfield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
     })
 
 
 
     socket.on("move", (data, roomCode) =>{
+        console.log("move");
         subfield = data;
         socket.broadcast.to(roomCode).emit("position", subfield);
     });

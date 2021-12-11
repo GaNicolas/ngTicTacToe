@@ -26,9 +26,35 @@ export class GameComponent implements OnInit {
   playerTwo: any;
   currentPlayer : any;
   information: any;
+  element : any;
+  displayPlayer: boolean = false;
 
   ngOnInit(): void {
     this.socket = io("http://localhost:3000");
+
+    this.socket.on("isFull", (bool:any)=>{
+      if(!bool){
+        this.startGame(this.id);
+        this.isTurn = false;
+    }else
+        this.setTitle('This room is full !');
+    });
+  }
+
+  clearFieldVisual(): void{
+    for(let i=0 ; i < 9 ; i++){
+      this.element = document.querySelector('.position'+i);
+      console.log(this.element);
+      if(this.element?.classList.contains('player-one')){
+
+        this.element?.classList.remove('player-one');
+
+      }
+      if(this.element?.classList.contains('player-two')){
+        this.element?.classList.remove('player-two');
+      }
+
+    }
   }
 
   startGame (idRoom: number): void{
@@ -42,13 +68,17 @@ export class GameComponent implements OnInit {
     });
 
     this.socket.on("onStart", (Vrai:any) =>{
-      this.setTurnHTML();
+      this.setDisplayPlayer(true).then(()=>{
+        this.setTurnHTML();
+      });
     });
 
-    this.socket.on("leave", (id:any)=>{
+    this.socket.on("hasLeft", (id:any)=>{
       if(id == this.id){
         this.setTitle("Opponent left... Waiting for an opponent...");
         this.isTurn = false;
+        this.game.gameStart();
+        this.clearFieldVisual();
       }
     });
 
@@ -62,6 +92,10 @@ export class GameComponent implements OnInit {
       }
     });
   }
+
+  async setDisplayPlayer(bool:boolean): Promise<void>{
+    this.displayPlayer = bool;
+  };
 
   async setTurnHTML(){
     if(this.isTurn == true){
@@ -86,16 +120,10 @@ export class GameComponent implements OnInit {
     return bool;
   }
 
-  async onSubmit(idRoom: NgForm):Promise<void>{
+  onSubmit(idRoom: NgForm): void{
     if(idRoom.value.idRoom >= 1){
-    this.socket.emit("isFull",true);
-    this.socket.on("isFull", (bool:any)=>{
-      if(!bool){
-        this.startGame(idRoom.value.idRoom);
-        this.isTurn = false;
-    }else
-        this.setTitle('This room is full !');
-    });
+      this.id = idRoom.value.idRoom;
+      this.socket.emit("isFull",true);
   }
 };
 
@@ -141,11 +169,7 @@ export class GameComponent implements OnInit {
             }
           });
         }
-
           this.game.changePlayer();
-
-        if(this.game.gameStatus === 1){
-        }
       }
       try{
         this.positionHold.pop();
@@ -163,7 +187,6 @@ export class GameComponent implements OnInit {
       const position = subfield.currentTarget.getAttribute('position');
       if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
-        
         this.subfieldSocket={
           'position': subfield.currentTarget.getAttribute('position'),
           'currentTarget': subfield.currentTarget,
@@ -195,8 +218,6 @@ export class GameComponent implements OnInit {
           });
         }
           this.game.changePlayer();
-        if(this.game.gameStatus === 1){
-        }
       }
       try{
         this.positionHold.pop();

@@ -16,6 +16,7 @@ export class Gamelogic {
     }
 
     gameStart(): void{
+        this.gamefield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.currentTurn = 1;
         this.gameStatus = Status.START;
     }
@@ -36,6 +37,10 @@ export class Gamelogic {
     getPlayerColorClass(): string{
         const colorClass = (this.currentTurn === 2) ? 'player-two' : 'player-one';
         return colorClass;
+    }
+
+    setPlayer(num:number):void{
+        this.currentTurn = num;
     }
 
     changePlayer():void{

@@ -60,6 +60,7 @@ export class GameComponent implements OnInit {
   startGame (idRoom: number): void{
     this.id = idRoom;
     this.game.gameStart();
+    console.log(this.game.currentTurn);
     this.setTitle("Waiting for an opponent...");
 
     this.socket.emit("joinRoom", idRoom);
@@ -141,7 +142,8 @@ export class GameComponent implements OnInit {
   }
 
   async clickSubfieldSocket(subfield: any):Promise<void>{
-    if(this.game.gameStatus == 1){
+    if(this.game.gameStatus == 1 && !this.isTurn){
+      console.log("socket");
       this.isTurn = true;
       this.turn();
       const position = subfield.position;
@@ -169,7 +171,8 @@ export class GameComponent implements OnInit {
             }
           });
         }
-          this.game.changePlayer();
+        console.log("chnagePlayerSocket");
+        this.game.changePlayer();
       }
       try{
         this.positionHold.pop();
@@ -184,6 +187,7 @@ export class GameComponent implements OnInit {
 
   async clickSubfield(subfield: any):Promise<void>{
     if(this.game.gameStatus == 1 && this.isTurn){
+      console.log("field");
       const position = subfield.currentTarget.getAttribute('position');
       if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
@@ -195,8 +199,10 @@ export class GameComponent implements OnInit {
         this.isTurn = false;
         this.turn();
         this.game.setField(position, this.game.currentTurn);
+        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         subfield.currentTarget.classList.add(color);
+
         await this.game.checkGameEndWinner().then((end: boolean) => {
           this.win = end;
             if(this.game.gameStatus === 0 && end) {
@@ -217,7 +223,9 @@ export class GameComponent implements OnInit {
             }
           });
         }
-          this.game.changePlayer();
+        console.log("chnagePlayerField");
+
+        this.game.changePlayer();
       }
       try{
         this.positionHold.pop();

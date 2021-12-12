@@ -19,6 +19,13 @@ var subfield;
 var id=0;
 let players = [];
 
+function other(socketId){
+    const index = players.indexOf(socketId);
+    if(index > - 1){
+        return players[(index + 1) % 2];
+    }
+}
+
 function delPlayer(socketId){
     const index = players.indexOf(socketId);
     if( index > -1){
@@ -59,7 +66,7 @@ Socketio.on("connection", socket =>{
     socket.on("disconnect",() =>{
         delPlayer(socket.id);
         Socketio.to(id).emit("hasLeft",id);
-        subfield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
     })
 
     socket.on("leaveRoom", (roomCode) =>{
@@ -73,18 +80,16 @@ Socketio.on("connection", socket =>{
         socket.leave(roomCode);
         delPlayer(socket.id);
         Socketio.to(roomCode).emit("hasLeft",roomCode);
-        subfield = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
     })
 
-
-
     socket.on("move", (data, roomCode) =>{
-        console.log("move");
         subfield = data;
-        socket.broadcast.to(roomCode).emit("position", subfield);
+        console.log(socket.id);
+        Socketio.to(other(socket.id)).emit("position", subfield);
     });
 });
+
+
 
 Http.listen(3000, () =>{
     console.log("Listening at : 3000...");

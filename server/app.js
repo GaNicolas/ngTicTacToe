@@ -47,9 +47,6 @@ Socketio.on("connection", socket =>{
         if(players.length < 2){
         socket.join(roomCode);
         players.push(socket.id);
-        console.log(players);
-        console.log(roomCode);
-        console.log(Socketio.sockets.adapter.rooms.get(roomCode).size);
         if(Socketio.sockets.adapter.rooms.get(roomCode).size <= 2){
             //players[Socketio.sockets.adapter.rooms.get(roomCode).size -1 ] = socket.id;
         const rndInt = randomIntFromInterval(0,1);
@@ -70,7 +67,6 @@ Socketio.on("connection", socket =>{
     })
 
     socket.on("leaveRoom", (roomCode) =>{
-        console.log("leaveRoom");
         socket.leave(roomCode);
         players = [];
     
@@ -84,7 +80,6 @@ Socketio.on("connection", socket =>{
 
     socket.on("move", (data, roomCode) =>{
         subfield = data;
-        console.log(socket.id);
         Socketio.to(other(socket.id)).emit("position", subfield);
     });
 });

@@ -44,7 +44,6 @@ export class GameComponent implements OnInit {
   clearFieldVisual(): void{
     for(let i=0 ; i < 9 ; i++){
       this.element = document.querySelector('.position'+i);
-      console.log(this.element);
       if(this.element?.classList.contains('player-one')){
 
         this.element?.classList.remove('player-one');
@@ -60,7 +59,6 @@ export class GameComponent implements OnInit {
   startGame (idRoom: number): void{
     this.id = idRoom;
     this.game.gameStart();
-    console.log(this.game.currentTurn);
     this.setTitle("Waiting for an opponent...");
 
     this.socket.emit("joinRoom", idRoom);
@@ -143,7 +141,6 @@ export class GameComponent implements OnInit {
 
   async clickSubfieldSocket(subfield: any):Promise<void>{
     if(this.game.gameStatus == 1 && !this.isTurn){
-      console.log("socket");
       this.isTurn = true;
       this.turn();
       const position = subfield.position;
@@ -171,7 +168,6 @@ export class GameComponent implements OnInit {
             }
           });
         }
-        console.log("chnagePlayerSocket");
         this.game.changePlayer();
       }
       try{
@@ -187,7 +183,6 @@ export class GameComponent implements OnInit {
 
   async clickSubfield(subfield: any):Promise<void>{
     if(this.game.gameStatus == 1 && this.isTurn){
-      console.log("field");
       const position = subfield.currentTarget.getAttribute('position');
       if(this.game.gamefield[position] == 0){
       if(position != this.positionHold[0]){
@@ -199,7 +194,6 @@ export class GameComponent implements OnInit {
         this.isTurn = false;
         this.turn();
         this.game.setField(position, this.game.currentTurn);
-        console.log(this.game.gamefield);
         const color = this.game.getPlayerColorClass();
         subfield.currentTarget.classList.add(color);
 
@@ -223,7 +217,7 @@ export class GameComponent implements OnInit {
             }
           });
         }
-        console.log("chnagePlayerField");
+
 
         this.game.changePlayer();
       }

@@ -45,7 +45,6 @@ export class Gamelogic {
 
     changePlayer():void{
         this.currentTurn = (this.currentTurn === 2) ? 1 : 2;
-        console.log("Turn : "+this.currentTurn)
     }
 
     async checkGameEndFull(): Promise<boolean>{

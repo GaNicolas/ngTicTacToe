@@ -1,7 +1,9 @@
 # ngTicTacToe
 
 ✔️ Utilisation de Socket.IO<br/>
-✔️ Angular
+✔️ Angular<br/>
+
+Morpion "multiplayer" en ligne en Angular et avec Socket.IO.
 
 ### 📕 Pour deployer l'application localement:
 
